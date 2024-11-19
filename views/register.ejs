@@ -1,0 +1,75 @@
+<div id="message-bar">
+  <p id="notification"></p>
+</div>
+<h1>Register</h1>
+<form action="/register" method="POST" id="form-register">
+  <label for="name">Name</label>
+  <br />
+  <input type="text" name="name" id="name" placeholder="Enter email" />
+  <br />
+
+  <label for="email">Email</label>
+  <br />
+  <input type="email" name="email" id="email" placeholder="Enter email" />
+  <br />
+
+  <label for="password">Password</label>
+  <br />
+  <input
+    type="password"
+    name="password"
+    id="password"
+    placeholder="Enter password"
+  />
+  <br />
+  <button type="submit">Sign up</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  const notification = document.getElementById("notification");
+  const form = document.getElementById("form-register");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const body = {
+      name: name,
+      email: email,
+      password: password,
+    };
+
+    fetch("/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === 201) {
+          socket.emit("notification", data.message);
+          setTimeout(() => {
+            window.location.href = `/sign-in`;
+          }, 3000);
+        } else {
+          socket.emit("notification", data.message);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  socket.on("notification", (data) => {
+    notification.textContent = data;
+  });
+</script>
